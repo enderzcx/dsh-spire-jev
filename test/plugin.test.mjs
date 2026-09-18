@@ -7,17 +7,23 @@ test('registers native tools and forwards state/action/strategy to one core seam
     act:async(...a)=>{calls.push(['act',...a]);return{ok:true};},
     saveStrategy:async(strategy,o)=>{calls.push(['saveStrategy',strategy,o.signal]);return{saved:true,strategy};},
     strategy:async o=>{calls.push(['strategy',o.signal]);return{strategy:null};},
-    advance:async(max,o)=>{calls.push(['advance',max,o.signal]);return{reason:'needs_decision'};}}));
+    advance:async(max,o)=>{calls.push(['advance',max,o.signal]);return{reason:'needs_decision'};},
+    battle:async(max,o)=>{calls.push(['battle',max,o.strategy,o.expectedStateId,o.signal]);return{reason:'left_combat'};}}));
   assert.equal(defs.length,9);
   assert.deepEqual(await defs.find(d=>d.name==='spire_state').execute({}, {signal}),{state_id:'s'});
   await defs.find(d=>d.name==='spire_act').execute({state_id:'s',option_id:'2'}, {signal});
   await defs.find(d=>d.name==='spire_save_strategy').execute({strategy:{strategy_id:'s1',conditions:[{kind:'same_floor',act:1,floor:4}],order:[{match:'打击'}]}},{signal});
   await defs.find(d=>d.name==='spire_strategy').execute({}, {signal});
   await defs.find(d=>d.name==='spire_advance').execute({max_steps:2},{signal});
+  await defs.find(d=>d.name==='spire_battle').execute({max_steps:3,expected_state_id:'s',strategy:{strategy_id:'x'}},{signal});
   assert.equal(calls[0][1],signal);assert.deepEqual(calls[1].slice(0,3),['act','s','2']);
   assert.equal(calls[2][0],'saveStrategy');
   assert.equal(calls[3][0],'strategy');
   assert.equal(calls[4][0],'advance');
+  assert.equal(calls[5][0],'battle');
+  assert.equal(calls[5][1],3);
+  assert.equal(calls[5][2].strategy_id,'x');
+  assert.equal(calls[5][3],'s');
 });
 test('cancellation blocks controller construction and game dispatch',async()=>{
   let built=false;const a=new AbortController();a.abort(Error('cancelled'));

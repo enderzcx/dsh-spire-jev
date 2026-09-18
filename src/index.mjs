@@ -32,7 +32,10 @@ export function toolDefinitions(controllerForCall){
   add('spire_act','Execute one advertised action against the exact observed state. Never repeat after uncertain failure.',{
     state_id:str('Exact identifier from latest spire_state or action result'),option_id:str('One advertised option id')},(c,a,o)=>c.act(a.state_id,a.option_id,o));
   add('spire_battle','Let the fast model play the current fight, returning on a strategic handoff, boundary or error. Requires TypeSafe key.',{
-    max_steps:{type:'integer',description:'1..100 steps; default 60'}},(c,a,o)=>c.battle(a.max_steps??60,o),300000);
+    max_steps:{type:'integer',description:'1..100 steps; default 60'},
+    expected_state_id:{type:'string',description:'Required with strategy; must equal the live state at the start of this call'},
+    strategy:{type:'object',additionalProperties:true,description:'Continuation for this call only. Not saved. Bound to expected_state_id.'}
+  },(c,a,o)=>c.battle(a.max_steps??60,{...o,strategy:a.strategy,expectedStateId:a.expected_state_id}),300000);
   add('spire_plan','Execute a predicted multi-card prefix without model calls between cards. Requires the queue-aware game bridge. Stop before unknown draws or random effects.',{
     plan:{type:'object',required:true,additionalProperties:false,properties:{
       state_id:str('Initial state identifier'),steps:{type:'array',required:true,items:{type:'object',additionalProperties:false,properties:{
@@ -41,8 +44,8 @@ export function toolDefinitions(controllerForCall){
         expect:{type:'object',required:true,additionalProperties:true,description:'Patch to planning_state after this card; unspecified fields stay unchanged. Hand removal and discard +1 are automatic.'}
       }}}
     }}},(c,a,o)=>c.plan(a.plan,o),120000);
-  add('spire_save_strategy','Save an explicit continuation for the current run. Conditions, expiry and run identity are checked by the program; unmatched order does not end the turn.',{
-    strategy:{type:'object',required:true,additionalProperties:true,description:'strategy_id, reason, conditions, expires_on and order. Run identity is bound from the live state.'}
+  add('spire_save_strategy','Persist a continuation only when the live run has a real identity. Without one, pass strategy to spire_battle instead.',{
+    strategy:{type:'object',required:true,additionalProperties:true,description:'strategy_id, reason, conditions, expires_on and order. Persisted only with a real run identity.'}
   },(c,a,o)=>c.saveStrategy(a.strategy,o));
   add('spire_strategy','Read the strategy currently bound to this run, if any.',{},(c,_a,o)=>c.strategy(o));
   add('spire_advance','Claim free rewards and click fixed buttons, then stop at the first real decision.',{
