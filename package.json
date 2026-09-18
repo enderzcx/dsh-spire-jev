@@ -1,6 +1,6 @@
 {
   "name": "dsh-spire-jev",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "Native DeepSeek Harness tools for Spire Jev, with shared safe game control and multi-card plans",
   "type": "module",
   "main": "src/index.mjs",
@@ -31,14 +31,17 @@
     }
   },
   "dependencies": {
-    "spire-jev": "https://github.com/enderzcx/spire-jev/archive/23fb5ddacdc7cc51e78c46fd4be80b3cf7ad586b.tar.gz",
     "@deepseek-ai/schemastery": "^3.18.2"
   },
   "peerDependencies": {
-    "@deepseek-ai/dsh-tools": "^0.1.5-rc.2"
+    "@deepseek-ai/dsh-tools": "^0.1.5-rc.2",
+    "spire-jev": "0.1.0"
   },
   "scripts": {
     "test": "node --test test/*.test.mjs",
     "check": "node --check src/index.mjs"
+  },
+  "devDependencies": {
+    "spire-jev": "https://github.com/enderzcx/spire-jev/archive/23fb5ddacdc7cc51e78c46fd4be80b3cf7ad586b.tar.gz"
   }
 }

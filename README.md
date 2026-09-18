@@ -9,7 +9,9 @@
 需要 Node.js 22+、已安装并配置模型的 DSH，以及 `pnpm`。
 
 ```sh
-dsh plugin --profile web add 'https://github.com/enderzcx/dsh-spire-jev/archive/refs/tags/v0.1.0.tar.gz'
+dsh plugin --profile web add \
+  'https://github.com/enderzcx/spire-jev/archive/23fb5ddacdc7cc51e78c46fd4be80b3cf7ad586b.tar.gz' \
+  'https://github.com/enderzcx/dsh-spire-jev/archive/refs/tags/v0.1.1.tar.gz'
 ```
 
 安装到 headless 时，将 `web` 换成 `headless`。重启相应 DSH 配置后，告诉它“调用 spire_help 和 spire_state 检查游戏”。插件安装命令会自动加入 DSH 的插件层，不需要自己编辑工具注册文件。
@@ -65,12 +67,13 @@ npm test
 npm run check
 ```
 
-核心依赖固定到已验证的 Git commit，通过公开 HTTPS 下载，不需要 GitHub 登录或 SSH key。升级核心时更新版本、锁文件，并重新验证 DSH 工具调用。此仓库不复制游戏状态机、Jev 请求和动作执行逻辑。
+安装命令把核心固定到已验证的 Git commit，通过公开 HTTPS 下载，不需要 GitHub 登录或 SSH key。核心作为显式顶层依赖安装，插件用精确 peer 版本连接它，兼容 pnpm 11 对嵌套 URL 依赖的保护。升级核心时更新版本、锁文件，并重新验证 DSH 工具调用。此仓库不复制游戏状态机、Jev 请求和动作执行逻辑。
 
 卸载：
 
 ```sh
 dsh plugin --profile web remove dsh-spire-jev
+# 不再需要通用核心时，可另行 remove spire-jev
 ```
 
 卸载插件不会删除游戏存档，也不会自动移除游戏 Mod。
