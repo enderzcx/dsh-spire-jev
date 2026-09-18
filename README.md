@@ -10,15 +10,15 @@
 
 ```sh
 dsh plugin --profile web add \
-  'https://github.com/enderzcx/spire-jev/archive/23fb5ddacdc7cc51e78c46fd4be80b3cf7ad586b.tar.gz' \
-  'https://github.com/enderzcx/dsh-spire-jev/archive/refs/tags/v0.1.1.tar.gz'
+  'https://github.com/enderzcx/spire-jev/archive/dd8370f387506026a137657b9d604e5b40eddf49.tar.gz' \
+  'https://github.com/enderzcx/dsh-spire-jev/archive/refs/tags/v0.1.2.tar.gz'
 ```
 
 安装到 headless 时，将 `web` 换成 `headless`。重启相应 DSH 配置后，告诉它“调用 spire_help 和 spire_state 检查游戏”。插件安装命令会自动加入 DSH 的插件层，不需要自己编辑工具注册文件。
 
 首次使用仍需完成两项准备：
 
-1. 安装 [核心项目的游戏 Mod](https://github.com/enderzcx/spire-jev#准备)，并从 Steam 启动游戏。插件不包含游戏本体。当前实测平台是 macOS arm64、游戏 v0.107.1。
+1. 安装 [已编译的游戏桥接包](https://github.com/enderzcx/spire-jev/releases/tag/v0.1.1)，按包内说明复制两个 Mod 文件，再从 Steam 启动游戏。该包不包含游戏本体，当前实测平台是 macOS arm64、游戏 v0.107.1；其他版本请参考核心项目源码构建。
 2. 在 DSH 的凭据/环境中提供 `TYPESAFE_API_KEY`。插件通过 DSH 的凭据引用读取，缺失时也可使用同名环境变量。只读状态、单步规划操作不调用 Jev；连续 Jev 战斗需要这个 key。
 
 不需要更换 DSH 当前使用的主模型。自己的 DeepSeek 配置、上下文和工具执行仍由 DSH 管理。
