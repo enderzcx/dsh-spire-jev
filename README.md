@@ -10,8 +10,8 @@
 
 ```sh
 dsh plugin --profile web add \
-  'https://github.com/enderzcx/spire-jev/archive/c06d86df0353bb36250b69c0a9d1cd3dced3ba6b.tar.gz' \
-  'https://github.com/enderzcx/dsh-spire-jev/archive/refs/tags/v0.2.0.tar.gz'
+  'https://github.com/enderzcx/spire-jev/archive/a7085e3839f1176d8746fc54abbcea782e253b8b.tar.gz' \
+  'https://github.com/enderzcx/dsh-spire-jev/archive/refs/tags/v0.2.1.tar.gz'
 ```
 
 安装到 headless 时，将 `web` 换成 `headless`。重启相应 DSH 配置后，告诉它“调用 spire_help 和 spire_state 检查游戏”。插件安装命令会自动加入 DSH 的插件层，不需要自己编辑工具注册文件。
@@ -57,7 +57,7 @@ dsh plugin --profile web add \
 
 ## 验证范围
 
-0.2.0 重构使用统一决策入口和共享执行事务。核心的离线验收覆盖未知动作不重发、击杀与格挡、策略切换与失效、多卡计划逐步核对、动作预算和日志统计；插件测试覆盖九个原生工具的转发、取消、凭据选择与加载无副作用。
+0.2.1 重构使用统一决策入口和共享执行事务。核心的离线验收覆盖未知动作不重发、击杀与格挡、策略切换与失效、多卡计划逐步核对、动作预算和日志统计；插件测试覆盖九个原生工具的转发、取消、凭据选择与加载无副作用。
 
 旧版有真实游戏和 Jev 调用记录，但不能用作新版整局速度或胜率证明。新版只读接入与完整战斗验收分开记录；核心的 [验证记录](https://github.com/enderzcx/spire-jev/blob/main/docs/VALIDATION.md) 保留证据边界。
 
