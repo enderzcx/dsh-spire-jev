@@ -1,0 +1,44 @@
+{
+  "name": "dsh-spire-jev",
+  "version": "0.1.0",
+  "description": "Native DeepSeek Harness tools for Spire Jev, with shared safe game control and multi-card plans",
+  "type": "module",
+  "main": "src/index.mjs",
+  "exports": {
+    ".": "./src/index.mjs",
+    "./package.json": "./package.json"
+  },
+  "engines": {
+    "node": ">=22"
+  },
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/enderzcx/dsh-spire-jev.git"
+  },
+  "files": [
+    "src",
+    "cordis.patch.yml",
+    "README.md",
+    "LICENSE"
+  ],
+  "dsh": {
+    "engines": {
+      "dsh": ">=0.1.5-rc.2"
+    },
+    "bundle": {
+      "patch": "./cordis.patch.yml"
+    }
+  },
+  "dependencies": {
+    "spire-jev": "https://github.com/enderzcx/spire-jev/archive/23fb5ddacdc7cc51e78c46fd4be80b3cf7ad586b.tar.gz",
+    "@deepseek-ai/schemastery": "^3.18.2"
+  },
+  "peerDependencies": {
+    "@deepseek-ai/dsh-tools": "^0.1.5-rc.2"
+  },
+  "scripts": {
+    "test": "node --test test/*.test.mjs",
+    "check": "node --check src/index.mjs"
+  }
+}
