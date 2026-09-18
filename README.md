@@ -10,8 +10,8 @@
 
 ```sh
 dsh plugin --profile web add \
-  'https://github.com/enderzcx/spire-jev/archive/dd8370f387506026a137657b9d604e5b40eddf49.tar.gz' \
-  'https://github.com/enderzcx/dsh-spire-jev/archive/refs/tags/v0.1.2.tar.gz'
+  'https://github.com/enderzcx/spire-jev/archive/a9908fc3be6073524fe5e37c5a2f282861565a2b.tar.gz' \
+  'https://github.com/enderzcx/dsh-spire-jev/archive/refs/tags/v0.1.3.tar.gz'
 ```
 
 安装到 headless 时，将 `web` 换成 `headless`。重启相应 DSH 配置后，告诉它“调用 spire_help 和 spire_state 检查游戏”。插件安装命令会自动加入 DSH 的插件层，不需要自己编辑工具注册文件。
@@ -53,9 +53,10 @@ dsh plugin --profile web add \
 ## 验证范围
 
 - 4 项插件离线测试通过：原生工具注册、调用转发、取消信号和加载时无副作用。
+- 核心固定到含程序侧局部决策（guard/resolve）与回合级指标的提交；固定后重新安装并复测，原生 `spire_state` / `spire_help` 正常读回真实局面。
 - 在隔离 DSH headless 配置完成真实安装，工具自动加载。
 - DSH 已实际调用原生 `spire_help` / `spire_state` 读回游戏；并完成原生写入及 Jev 链路实测：药水/事件选牌写入成功；`spire_battle(max_steps=1)` 实际调用 Jev 后因低置信度返回，DSH 用 `spire_act` 执行一张无情猛攻，真实读回能量4→2、目标HP46→32。没有 bash 或第二个未授权动作。
-- 核心独立验证包括多场战斗、精英、首领及多个双卡计划；整局结果以核心验证记录为准。
+- 核心独立验证包括多场战斗、精英、首领及多个双卡计划；整局结果以核心验证记录为准。程序在同一回合内连续出牌（`local_decision`）已在第三幕实战触发，期间无模型调用。
 
 插件不绕过 DSH 的工具权限策略。取消信号会传给核心；动作结果不明确时核心持久停止，不自动重试。
 
