@@ -12,7 +12,7 @@ export const Config=Schema.object({
   runtimeDir:Schema.string().description('Optional private gameplay log directory')
 });
 
-const guidance=`Spire Jev controls the user's running single-player Slay the Spire 2 via its local mod. Read spire_state first. Use spire_act with the exact state_id and advertised option id. Use spire_battle for routine Jev play until it returns control, and spire_plan for a deterministic multi-card prefix with predicted outcomes. Main-model decisions own deck building, route, potions, new mechanics and low-confidence choices. Unexpected state, draws or random effects require replanning. Never retry an uncertain mutation or operate concurrently with another player. Honor the user's stopping boundary. Installing this plugin does not install the game mod; the core README documents setup.`;
+const guidance=`Spire Jev controls the user's running single-player Slay the Spire 2 via its local mod. Read spire_state first. Use spire_act with the exact state_id and advertised option id. Use spire_battle for routine fast-model play until it returns control. Use spire_save_strategy to continue a fight under explicit conditions instead of handing over every card. Use spire_plan only for a predicted multi-card prefix. Use spire_advance for free claims and fixed buttons; it stops at a real choice. Main-model decisions own deck building, route, potions, unknown mechanics and low-confidence choices. Unexpected state, draws or random effects require replanning. Never retry an uncertain mutation or operate concurrently with another player. Honor the user's stopping boundary. Installing this plugin does not install the game mod; the core README documents setup.`;
 
 export function toolDefinitions(controllerForCall){
   const definitions=[];
@@ -23,7 +23,6 @@ export function toolDefinitions(controllerForCall){
         exec.signal?.throwIfAborted();
         const controller=await controllerForCall(name);
         const value=await run(controller,args,{signal:exec.signal});
-        // DSH requires canonical lossless JSON, including nested optional fields.
         return JSON.parse(JSON.stringify(value));
       }
     }));
@@ -32,7 +31,7 @@ export function toolDefinitions(controllerForCall){
   add('spire_state','Read live game state, legal options and round planning projection. Does not play a card.',{},(c,_a,o)=>c.state(o));
   add('spire_act','Execute one advertised action against the exact observed state. Never repeat after uncertain failure.',{
     state_id:str('Exact identifier from latest spire_state or action result'),option_id:str('One advertised option id')},(c,a,o)=>c.act(a.state_id,a.option_id,o));
-  add('spire_battle','Let Jev play the current fight, returning on a strategic handoff, boundary or error. Requires TypeSafe key.',{
+  add('spire_battle','Let the fast model play the current fight, returning on a strategic handoff, boundary or error. Requires TypeSafe key.',{
     max_steps:{type:'integer',description:'1..100 steps; default 60'}},(c,a,o)=>c.battle(a.max_steps??60,o),300000);
   add('spire_plan','Execute a predicted multi-card prefix without model calls between cards. Requires the queue-aware game bridge. Stop before unknown draws or random effects.',{
     plan:{type:'object',required:true,additionalProperties:false,properties:{
@@ -42,6 +41,12 @@ export function toolDefinitions(controllerForCall){
         expect:{type:'object',required:true,additionalProperties:true,description:'Patch to planning_state after this card; unspecified fields stay unchanged. Hand removal and discard +1 are automatic.'}
       }}}
     }}},(c,a,o)=>c.plan(a.plan,o),120000);
+  add('spire_save_strategy','Save an explicit continuation for the current run. Conditions, expiry and run identity are checked by the program; unmatched order does not end the turn.',{
+    strategy:{type:'object',required:true,additionalProperties:true,description:'strategy_id, reason, conditions, expires_on and order. Run identity is bound from the live state.'}
+  },(c,a,o)=>c.saveStrategy(a.strategy,o));
+  add('spire_strategy','Read the strategy currently bound to this run, if any.',{},(c,_a,o)=>c.strategy(o));
+  add('spire_advance','Claim free rewards and click fixed buttons, then stop at the first real decision.',{
+    max_steps:{type:'integer',description:'1..50 steps; default 20'}},(c,a,o)=>c.advance(a.max_steps??20,o),120000);
   add('spire_clear_halt','Only after inspecting uncertain action results: clear the shared stop against an exact fresh state. Does not replay the action.',{
     state_id:str('Exact state identifier after inspection')},(c,a,o)=>c.clearHalt(a.state_id,o));
   add('spire_help','Read the gameplay division of responsibility and setup requirements.',{},async()=>({guidance,core:'https://github.com/enderzcx/spire-jev'}));

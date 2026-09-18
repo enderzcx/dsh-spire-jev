@@ -33,8 +33,11 @@ dsh plugin --profile web add \
 |---|---|
 | `spire_state` | 读取真实状态、动作选项和计划状态 |
 | `spire_act` | 对刚读到的状态执行一个合法选项 |
-| `spire_battle` | Jev 连续打当前战斗，遇接管条件返回 |
+| `spire_battle` | 连续打当前战斗，遇接管条件返回 |
 | `spire_plan` | 一次提交多卡计划，逐步核对实际结果 |
+| `spire_save_strategy` | 为当前这局写入带条件和失效条件的续行 |
+| `spire_strategy` | 读取当前这局已绑定的续行 |
+| `spire_advance` | 只领取免费奖励、点固定按钮，遇到选择就停 |
 | `spire_clear_halt` | 核实不明确的动作结果后解除停止；不重放动作 |
 | `spire_help` | 查看分工和安装要求 |
 

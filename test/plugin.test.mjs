@@ -2,12 +2,22 @@ import {test} from 'node:test';
 import assert from 'node:assert/strict';
 import {toolDefinitions,apply} from '../src/index.mjs';
 const signal=new AbortController().signal;
-test('registers six native tools and forwards state/action to one core seam',async()=>{
-  const calls=[];const defs=toolDefinitions(async()=>({state:async o=>{calls.push(['state',o.signal]);return{state_id:'s',missing:undefined};},act:async(...a)=>{calls.push(['act',...a]);return{ok:true};}}));
-  assert.equal(defs.length,6);
+test('registers native tools and forwards state/action/strategy to one core seam',async()=>{
+  const calls=[];const defs=toolDefinitions(async()=>({state:async o=>{calls.push(['state',o.signal]);return{state_id:'s',missing:undefined};},
+    act:async(...a)=>{calls.push(['act',...a]);return{ok:true};},
+    saveStrategy:async(strategy,o)=>{calls.push(['saveStrategy',strategy,o.signal]);return{saved:true,strategy};},
+    strategy:async o=>{calls.push(['strategy',o.signal]);return{strategy:null};},
+    advance:async(max,o)=>{calls.push(['advance',max,o.signal]);return{reason:'needs_decision'};}}));
+  assert.equal(defs.length,9);
   assert.deepEqual(await defs.find(d=>d.name==='spire_state').execute({}, {signal}),{state_id:'s'});
   await defs.find(d=>d.name==='spire_act').execute({state_id:'s',option_id:'2'}, {signal});
+  await defs.find(d=>d.name==='spire_save_strategy').execute({strategy:{strategy_id:'s1',conditions:[{kind:'same_floor',act:1,floor:4}],order:[{match:'打击'}]}},{signal});
+  await defs.find(d=>d.name==='spire_strategy').execute({}, {signal});
+  await defs.find(d=>d.name==='spire_advance').execute({max_steps:2},{signal});
   assert.equal(calls[0][1],signal);assert.deepEqual(calls[1].slice(0,3),['act','s','2']);
+  assert.equal(calls[2][0],'saveStrategy');
+  assert.equal(calls[3][0],'strategy');
+  assert.equal(calls[4][0],'advance');
 });
 test('cancellation blocks controller construction and game dispatch',async()=>{
   let built=false;const a=new AbortController();a.abort(Error('cancelled'));
@@ -17,6 +27,7 @@ test('cancellation blocks controller construction and game dispatch',async()=>{
 test('plugin load registers tools without connecting to game or resolving secrets',()=>{
   const names=[];apply({tools:{register:d=>names.push(d.name)},get:()=>undefined},{});
   assert.ok(names.includes('spire_plan'));assert.ok(names.includes('spire_battle'));
+  assert.ok(names.includes('spire_save_strategy'));assert.ok(names.includes('spire_advance'));
 });
 test('missing selected credential cannot fall back to a different default account',async()=>{
   const old=process.env.TYPESAFE_API_KEY,oldFetch=globalThis.fetch;let fetched=false;const tools=[];
