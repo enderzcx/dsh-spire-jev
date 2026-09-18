@@ -10,8 +10,8 @@
 
 ```sh
 dsh plugin --profile web add \
-  'https://github.com/enderzcx/spire-jev/archive/f3f0d3e16fedbbb45234216c581485920172375c.tar.gz' \
-  'https://github.com/enderzcx/dsh-spire-jev/archive/refs/tags/v0.1.4.tar.gz'
+  'https://github.com/enderzcx/spire-jev/archive/c06d86df0353bb36250b69c0a9d1cd3dced3ba6b.tar.gz' \
+  'https://github.com/enderzcx/dsh-spire-jev/archive/refs/tags/v0.2.0.tar.gz'
 ```
 
 安装到 headless 时，将 `web` 换成 `headless`。重启相应 DSH 配置后，告诉它“调用 spire_help 和 spire_state 检查游戏”。插件安装命令会自动加入 DSH 的插件层，不需要自己编辑工具注册文件。
@@ -35,13 +35,15 @@ dsh plugin --profile web add \
 | `spire_act` | 对刚读到的状态执行一个合法选项 |
 | `spire_battle` | 连续打当前战斗，遇接管条件返回 |
 | `spire_plan` | 一次提交多卡计划，逐步核对实际结果 |
-| `spire_save_strategy` | 为当前这局写入带条件和失效条件的续行 |
+| `spire_save_strategy` | 仅当桥接提供可靠整局 ID 时持久保存策略 |
 | `spire_strategy` | 读取当前这局已绑定的续行 |
 | `spire_advance` | 只领取免费奖励、点固定按钮，遇到选择就停 |
 | `spire_clear_halt` | 核实不明确的动作结果后解除停止；不重放动作 |
 | `spire_help` | 查看分工和安装要求 |
 
 多卡计划是在信息确定的前缀里减少模型调用，不是盲目连点。遇到抽牌、随机变化、意图改变、选牌弹窗或预测偏离，会停止并交回规划。完整规则见 [核心回合计划说明](https://github.com/enderzcx/spire-jev/blob/main/docs/ROUND-PLAN.md)。
+
+当前桥接没有整局唯一 ID，因此通常使用 `spire_battle` 的 `strategy` 和 `expected_state_id` 参数。先从 `spire_state` 取得最新状态标识，再传入策略；策略只在这次调用内有效，失效就停止并交回。不要为当前桥接手写持久策略文件。
 
 ## 配置
 
@@ -55,14 +57,11 @@ dsh plugin --profile web add \
 
 ## 验证范围
 
-- 4 项插件离线测试通过：原生工具注册、调用转发、取消信号和加载时无副作用。
-- 核心固定到含程序侧局部决策（guard/resolve）与回合级指标的提交；固定后重新安装并复测，原生 `spire_state` / `spire_help` 正常读回真实局面。
-- 在隔离 DSH headless 配置完成真实安装，工具自动加载。
-- DSH 已实际调用原生 `spire_help` / `spire_state` 读回游戏；并完成原生写入及 Jev 链路实测：药水/事件选牌写入成功；`spire_battle(max_steps=1)` 实际调用 Jev 后因低置信度返回，DSH 用 `spire_act` 执行一张无情猛攻，真实读回能量4→2、目标HP46→32。没有 bash 或第二个未授权动作。
-- 核心独立验证包括多场战斗、精英、首领及多个双卡计划；整局结果以核心验证记录为准。程序在同一回合内连续出牌（`local_decision`）已在实战触发，期间无模型调用；策略续行实测连续 12 步、0 模型调用。
-- 固定的核心同时提供机械推进（`advance`，只在免费领取/固定按钮处推进，遇到战略选择即停）与短计划候选（`SPIRE_CANDIDATES=1`）。
+0.2.0 重构使用统一决策入口和共享执行事务。核心的离线验收覆盖未知动作不重发、击杀与格挡、策略切换与失效、多卡计划逐步核对、动作预算和日志统计；插件测试覆盖九个原生工具的转发、取消、凭据选择与加载无副作用。
 
-插件不绕过 DSH 的工具权限策略。取消信号会传给核心；动作结果不明确时核心持久停止，不自动重试。
+旧版有真实游戏和 Jev 调用记录，但不能用作新版整局速度或胜率证明。新版只读接入与完整战斗验收分开记录；核心的 [验证记录](https://github.com/enderzcx/spire-jev/blob/main/docs/VALIDATION.md) 保留证据边界。
+
+插件不绕过 DSH 工具权限。未知能力与未支持的遗物不被包装成精确预测；动作结果不明时持久停止，不自动重试。`spire_state` 返回实际核心版本与决策协议号，可用来确认安装版本。
 
 ## 开发与更新
 
